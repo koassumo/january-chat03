@@ -1,5 +1,8 @@
 package com.geekbrains.chat.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,18 +22,32 @@ public class Server {
         return authManager;
     }
 
+    private static final Logger LOGGER = LogManager.getLogger(MainApp.class);
+    // Trace < Debug < Info < Warn < Error < Fatal
+
     public Server(int port) {
+
+//        LOGGER.debug("Debug");
+//        LOGGER.info("Info");
+//        LOGGER.warn("Warn");
+//        LOGGER.error("Error");
+//        LOGGER.fatal("Fatal");
+//        LOGGER.info("String: {}.", "Hello, World");
+
         clients = new ArrayList<>();
         authManager = new DbAuthManager();
         authManager.start();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен. Ожидаем подключения клиентов...");
+            LOGGER.info("String: {}.", "Сервер запущен");
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Клиент подключился");
+                LOGGER.info("String: {}.", "Клиент подключился");
                 new ClientHandler(this, socket);
             }
         } catch (IOException e) {
+            LOGGER.error("Error: {}.", "какая-то ошибка сервера");
             e.printStackTrace();
         } finally {
             authManager.stop();
@@ -41,6 +58,7 @@ public class Server {
         if (withDateTime) {
             msg = String.format("[%s] %s", LocalDateTime.now().format(DTF), msg);
         }
+        LOGGER.info("клиент прислал сообщение: {}.", msg);
         for (ClientHandler o : clients) {
             o.sendMsg(msg);
         }
